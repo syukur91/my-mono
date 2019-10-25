@@ -1,0 +1,27 @@
+{
+  "name": "tracking_api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "firebase": "^7.2.1",
+    "firebase-admin": "^8.6.1",
+    "firebase-app": "0.0.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/syukur91/tracking_api.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/syukur91/tracking_api/issues"
+  },
+  "homepage": "https://github.com/syukur91/tracking_api#readme"
+}
