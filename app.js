@@ -1,18 +1,22 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+var env = require('node-env-file');
+env('.env');
 
 var obj = {someAttribute: true};
 
+
+
 var firebase = require('firebase');
 const firebaseConfig = {
-    apiKey: "AIzaSyBpwOpo1mJKRvLurGlwxK4nQd4rrj2FZuc",
-    authDomain: "tracking-z22.firebaseapp.com",
-    databaseURL: "https://tracking-z22.firebaseio.com",
-    projectId: "tracking-z22",
-    storageBucket: "tracking-z22.appspot.com",
-    messagingSenderId: "1048191036878",
-    appId: "1:1048191036878:web:1adc85c2c17234d944cf9f"
+    apiKey: process.env.API_KEY,
+    authDomain:  process.env.AUTH_DOMAIN,
+    databaseURL: process.env.DB_URL,
+    projectId: process.env.PROJECT_ID,
+    storageBucket: process.env.STORAGE_BUCKET,
+    messagingSenderId: process.env.MESSAGING_SENDER_ID,
+    appId: process.env.APP_ID
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -25,6 +29,7 @@ var locationData = {
     latitude    : "913123",
     longitude   : "54521",
 };
+
 
 var orderData = {
     orderID     : "12313ADASD",
@@ -49,3 +54,4 @@ app.post('/order', function (req, res) {
 });
 
 app.listen(process.env.PORT || 8080);
+console.log('Loocads API run on port ' + process.env.PORT);
