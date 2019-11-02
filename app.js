@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const env = require('node-env-file');
-const compareJSON = require('JSON-structure-validator');
+const compareJSON = require('json-structure-validator');
 env('.env');
 
 const firebase = require('firebase');
@@ -40,34 +40,53 @@ var vehicleSchema = {
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.get('/', function (req, res) {
- return res.send('Hello world');
+let status = {}
+
+const responseCode = {}
+responseCode.internalServerError = 500
+responseCode.notFound = 400
+responseCode.ok = 200
+
+app.get('/healthcheck', function (req, res) {
+ return res.send(200);
 });
 
 
 // Add tracking data
 app.post('/tracking', function (req, res) {
     try {
-        JSON.parse(req.body);
-        if(compareJSON(trackingSchema, req.body)) {
+        var compare = compareJSON(trackingSchema, req.body)
+        if(compare == true) {
             // tracking.push(locationData);
-            return res.send(req.body);
+            status.data     = req.body
+            status.status   = responseCode.ok
+            return res.status(responseCode.ok).json(status);
         } else {
-            throw new Error("Format data is wrong");
+            throw new Error(compare);
         } 
     } catch (e) {
-        return res.send(e);
+        status.message      = e.message
+        status.status       = responseCode.internalServerError
+        return res.status(responseCode.internalServerError).json(status);
     }
 });
 
 // Add order data
 app.post('/order', function (req, res) {
     try {
-        JSON.parse(req.body);
-        order.push(locationData);
-        return res.send(req.body);
+        var compare = compareJSON(orderSchema, req.body)
+        if(compare == true) {
+            // tracking.push(locationData);
+            status.data     = req.body
+            status.status   = responseCode.ok
+            return res.status(responseCode.ok).send(status);
+        } else {
+            throw new Error(compare);
+        } 
     } catch (e) {
-        return res.send("not a JSON");
+        status.message  = e.message
+        status.status  = responseCode.internalServerError
+        return res.status(responseCode.internalServerError).json(status);
     }
 });
 
