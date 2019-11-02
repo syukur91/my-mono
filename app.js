@@ -3,6 +3,8 @@ const app = express();
 const bodyParser = require('body-parser');
 const env = require('node-env-file');
 const compareJSON = require('json-structure-validator');
+const short = require('shortid');
+
 env('.env');
 
 const firebase = require('firebase');
@@ -20,14 +22,14 @@ firebase.initializeApp(firebaseConfig);
 
 const tracking = firebase.database().ref('/tracking');
 const order = firebase.database().ref('/order');
+const vechicle = firebase.database().ref('/vechicle');
 
 var orderSchema = {
-    "orderID"   : "",
     "orderName" : ""
 };
 
 var trackingSchema = {
-    "orderID"   : "",
+
     "latitude"  : "",
     "longitude" : ""
 };
@@ -52,12 +54,20 @@ app.get('/healthcheck', function (req, res) {
 });
 
 
-// Add tracking data
-app.post('/tracking', function (req, res) {
+
+// Add or Update tracking data
+app.put('/tracking/:id', function (req, res) {
     try {
+        let id = req.params.id; 
         var compare = compareJSON(trackingSchema, req.body)
         if(compare == true) {
-            // tracking.push(locationData);
+
+            let data = {}
+            data.orderID = id 
+            data.latitude = req.body.latitude 
+            data.longitude = req.body.longitude
+            tracking.child(id).update(data)
+
             status.data     = req.body
             status.status   = responseCode.ok
             return res.status(responseCode.ok).json(status);
@@ -76,8 +86,13 @@ app.post('/order', function (req, res) {
     try {
         var compare = compareJSON(orderSchema, req.body)
         if(compare == true) {
-            // tracking.push(locationData);
-            status.data     = req.body
+            let id = short.generate()
+            let data = {}
+            data.orderID    = id
+            data.orderName  = req.body.orderName
+            order.child(id).set(data)
+
+            status.data     = data
             status.status   = responseCode.ok
             return res.status(responseCode.ok).send(status);
         } else {
@@ -91,13 +106,22 @@ app.post('/order', function (req, res) {
 });
 
 
-// Add fleet data
-app.post('/fleet', function (req, res) {
+// Add vehicle data
+app.post('/vehicle', function (req, res) {
     try {
-        JSON.parse(req.body);
-        return res.send(req.body);
+        var compare = compareJSON(vehicleSchema, req.body)
+        if(compare == true) {
+            // tracking.push(locationData);
+            status.data     = req.body
+            status.status   = responseCode.ok
+            return res.status(responseCode.ok).send(status);
+        } else {
+            throw new Error(compare);
+        } 
     } catch (e) {
-        return res.send("not a JSON");
+        status.message  = e.message
+        status.status  = responseCode.internalServerError
+        return res.status(responseCode.internalServerError).json(status);
     }
 });
 
