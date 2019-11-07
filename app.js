@@ -29,7 +29,6 @@ var orderSchema = {
 };
 
 var trackingSchema = {
-
     "latitude"  : "",
     "longitude" : ""
 };
@@ -111,7 +110,6 @@ app.post('/vehicle', function (req, res) {
     try {
         var compare = compareJSON(vehicleSchema, req.body)
         if(compare == true) {
-            // tracking.push(locationData);
             status.data     = req.body
             status.status   = responseCode.ok
             return res.status(responseCode.ok).send(status);
