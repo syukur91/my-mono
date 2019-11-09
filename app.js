@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const env = require('node-env-file');
 const compareJSON = require('json-structure-validator');
 const short = require('shortid');
+const _ = require('underscore')
 
 env('.env');
 
@@ -23,6 +24,7 @@ firebase.initializeApp(firebaseConfig);
 const tracking = firebase.database().ref('/tracking');
 const order = firebase.database().ref('/order');
 const vechicle = firebase.database().ref('/vechicle');
+const availabiliy = firebase.database().ref('/availabiliy');
 
 
 var orderSchema = {
@@ -37,6 +39,11 @@ var trackingSchema = {
 var vehicleSchema = {
     "vehicleID"      : "",
     "vehicleNumber"  : ""
+};
+
+var availabilitySchema = {
+    "type"          : "",
+    "count"         : 0
 };
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -123,6 +130,80 @@ app.post('/vehicle', function (req, res) {
         return res.status(responseCode.internalServerError).json(status);
     }
 });
+
+// Reset vehicle availability data
+app.post('/availability', function (req, res) {
+    try {
+        var compare = compareJSON(availabilitySchema, req.body)
+        if(compare == true) {
+            let id = short.generate()
+            let data = {}
+            data.ID    = id
+            data.type  = req.body.type
+            data.count = req.body.count
+            availabiliy.child(id).set(data)
+
+
+            status.data     = req.body
+            status.status   = responseCode.ok
+            return res.status(responseCode.ok).send(status);
+        } else {
+            throw new Error(compare);
+        } 
+    } catch (e) {
+        status.message  = e.message
+        status.status  = responseCode.internalServerError
+        return res.status(responseCode.internalServerError).json(status);
+    }
+});
+
+// Update vehicle availability data
+app.put('/availability/:id', function (req, res) {
+    try {
+        let id = req.params.id; 
+        var compare = compareJSON(availabilitySchema, req.body)
+        if(compare == true) {
+            
+            let data = {}
+            data.count = req.body.count
+            availabiliy.child(id).update(data)
+
+
+            status.data     = req.body
+            status.status   = responseCode.ok
+            return res.status(responseCode.ok).send(status);
+        } else {
+            throw new Error(compare);
+        } 
+    } catch (e) {
+        status.message  = e.message
+        status.status  = responseCode.internalServerError
+        return res.status(responseCode.internalServerError).json(status);
+    }
+});
+
+// Get vehicle availability data
+app.get('/availability', function (req, res) {
+    try {
+        availabiliy.once("value").then(snap => {
+
+            _.each(snap.val(), function(data) {
+                data.count = 99
+                availabiliy.child(data.ID).update(data)
+                console.log(data)
+            });
+
+            return res.status(responseCode.ok).send(snap.val());
+        }).catch(error => {
+            throw new Error(error);
+        })             
+    } catch (e) {
+        status.message  = e.message
+        status.status  = responseCode.internalServerError
+        return res.status(responseCode.internalServerError).json(status);
+    }
+});
+
 
 
 
