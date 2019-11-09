@@ -124,5 +124,7 @@ app.post('/vehicle', function (req, res) {
     }
 });
 
+
+
 app.listen(process.env.PORT || 8080);
 console.log('Tracking API run on port ' + process.env.PORT);
