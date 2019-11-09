@@ -113,8 +113,10 @@ app.post('/order', function (req, res) {
 });
 
 
-// Add vehicle data
-app.post('/vehicle', function (req, res) {
+
+
+// Add availability data
+app.post('/availability', function (req, res) {
     try {
         var compare = compareJSON(vehicleSchema, req.body)
         if(compare == true) {
@@ -131,18 +133,15 @@ app.post('/vehicle', function (req, res) {
     }
 });
 
-// Update single vehicle availability data
+// Update single availability data
 app.put('/availability/:id', function (req, res) {
     try {
         let id = req.params.id; 
         var compare = compareJSON(availabilitySchema, req.body)
         if(compare == true) {
-            
             let data = {}
             data.count = req.body.count
             availabiliy.child(id).update(data)
-
-
             status.data     = req.body
             status.status   = responseCode.ok
             return res.status(responseCode.ok).send(status);
@@ -156,7 +155,7 @@ app.put('/availability/:id', function (req, res) {
     }
 });
 
-// Reset vehicle availability data
+// Reset availability data
 app.put('/availability/default/:count', function (req, res) {
     try {
         let count = req.params.count;
@@ -177,6 +176,25 @@ app.put('/availability/default/:count', function (req, res) {
     }
 });
 
+// Get availability list
+app.get('/availability', function (req, res) {
+    try {
+        availabiliy.once("value").then(snap => {   
+            status.status   = responseCode.ok
+            status.data     = []
+            _.each(snap.val(), function(data) {
+                status.data.push(data)
+            });
+            return res.status(responseCode.ok).send(status);
+        }).catch(error => {
+            throw new Error(error);
+        }) 
+    } catch (e) {
+        status.message  = e.message
+        status.status  = responseCode.internalServerError
+        return res.status(responseCode.internalServerError).json(status);
+    }
+});
 
 
 
