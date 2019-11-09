@@ -182,13 +182,13 @@ app.put('/availability/:id', function (req, res) {
     }
 });
 
-// Get vehicle availability data
-app.get('/availability', function (req, res) {
+// Reset vehicle availability data
+app.put('/availability/default/:count', function (req, res) {
     try {
+        let count = req.params.count;
         availabiliy.once("value").then(snap => {
-
             _.each(snap.val(), function(data) {
-                data.count = 99
+                data.count = count
                 availabiliy.child(data.ID).update(data)
                 console.log(data)
             });
