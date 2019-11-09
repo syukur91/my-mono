@@ -131,33 +131,7 @@ app.post('/vehicle', function (req, res) {
     }
 });
 
-// Reset vehicle availability data
-app.post('/availability', function (req, res) {
-    try {
-        var compare = compareJSON(availabilitySchema, req.body)
-        if(compare == true) {
-            let id = short.generate()
-            let data = {}
-            data.ID    = id
-            data.type  = req.body.type
-            data.count = req.body.count
-            availabiliy.child(id).set(data)
-
-
-            status.data     = req.body
-            status.status   = responseCode.ok
-            return res.status(responseCode.ok).send(status);
-        } else {
-            throw new Error(compare);
-        } 
-    } catch (e) {
-        status.message  = e.message
-        status.status  = responseCode.internalServerError
-        return res.status(responseCode.internalServerError).json(status);
-    }
-});
-
-// Update vehicle availability data
+// Update single vehicle availability data
 app.put('/availability/:id', function (req, res) {
     try {
         let id = req.params.id; 
