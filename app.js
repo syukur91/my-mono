@@ -190,10 +190,9 @@ app.put('/availability/default/:count', function (req, res) {
             _.each(snap.val(), function(data) {
                 data.count = count
                 availabiliy.child(data.ID).update(data)
-                console.log(data)
             });
-
-            return res.status(responseCode.ok).send(snap.val());
+            status.status   = responseCode.ok
+            return res.status(responseCode.ok).send(status);
         }).catch(error => {
             throw new Error(error);
         })             
