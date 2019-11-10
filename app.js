@@ -5,6 +5,7 @@ const env = require('node-env-file');
 const compareJSON = require('json-structure-validator');
 const short = require('shortid');
 const _ = require('underscore')
+const async = require('async');
 
 env('.env');
 
@@ -24,11 +25,12 @@ firebase.initializeApp(firebaseConfig);
 const tracking = firebase.database().ref('/tracking');
 const order = firebase.database().ref('/order');
 const vechicle = firebase.database().ref('/vechicle');
-const availabiliy = firebase.database().ref('/availabiliy');
+const availability = firebase.database().ref('/availability');
 
 
 var orderSchema = {
-    "orderName" : ""
+    "orderName"     : "",
+    "availabilityID": ""
 };
 
 var trackingSchema = {
@@ -95,13 +97,56 @@ app.post('/order', function (req, res) {
         if(compare == true) {
             let id = short.generate()
             let data = {}
+            let availabilityID = req.body.availabilityID
+
             data.orderID    = id
             data.orderName  = req.body.orderName
-            order.child(id).set(data)
 
-            status.data     = data
-            status.status   = responseCode.ok
-            return res.status(responseCode.ok).send(status);
+            async.waterfall([
+                function(callback) {
+                    
+                    availability.child(availabilityID).once("value").then(snap => {
+                        callback(null,snap.val())
+                    }).catch(error => {
+                        callback(error,null)
+                    }) 
+
+                },
+                function(arg1, callback){
+
+                    req.body.availabilityID = arg1.availabilityID
+                    data.availabilityID = arg1.availabilityID
+                    data.count = arg1.count
+
+                    order.child(id).set(req.body).then(() => {
+                        callback(null,data)
+                    }).catch(error => {
+                        callback(error,null) 
+                    })
+
+                }
+            ], function(err, results) {
+               
+                if (err) {
+                    status.status   = responseCode.internalServerError
+                    return res.status(responseCode.internalServerError).send(status);
+                }
+
+                availabilityData = {}
+                availabilityData.count = (results.count-1)
+                results.count = availabilityData.count
+
+                availability.child(availabilityID).update(availabilityData).then(() => {
+                    status.data     = results
+                    status.status   = responseCode.ok
+                    return res.status(responseCode.ok).send(status);
+                }).catch(error => {
+                    status.status   = responseCode.internalServerError
+                    return res.status(responseCode.internalServerError).send(status);
+                })
+               
+            });
+
         } else {
             throw new Error(compare);
         } 
@@ -118,11 +163,19 @@ app.post('/order', function (req, res) {
 // Add availability data
 app.post('/availability', function (req, res) {
     try {
-        var compare = compareJSON(vehicleSchema, req.body)
+        var compare = compareJSON(availabilitySchema, req.body)
         if(compare == true) {
-            status.data     = req.body
-            status.status   = responseCode.ok
-            return res.status(responseCode.ok).send(status);
+            let id = short.generate()
+            req.body.availabilityID = id
+           
+            availability.child(id).set(req.body).then(() => {
+                status.data     = req.body
+                status.status   = responseCode.ok
+                return res.status(responseCode.ok).send(status);
+            }).catch(error => {
+                throw new Error(error);
+            })
+           
         } else {
             throw new Error(compare);
         } 
@@ -141,7 +194,7 @@ app.put('/availability/:id', function (req, res) {
         if(compare == true) {
             let data = {}
             data.count = req.body.count
-            availabiliy.child(id).update(data)
+            availability.child(id).update(data)
             status.data     = req.body
             status.status   = responseCode.ok
             return res.status(responseCode.ok).send(status);
@@ -159,10 +212,10 @@ app.put('/availability/:id', function (req, res) {
 app.put('/availability/default/:count', function (req, res) {
     try {
         let count = req.params.count;
-        availabiliy.once("value").then(snap => {
+        availability.once("value").then(snap => {
             _.each(snap.val(), function(data) {
                 data.count = count
-                availabiliy.child(data.ID).update(data)
+                availability.child(data.ID).update(data)
             });
             status.status   = responseCode.ok
             return res.status(responseCode.ok).send(status);
@@ -179,7 +232,7 @@ app.put('/availability/default/:count', function (req, res) {
 // Get availability list
 app.get('/availability', function (req, res) {
     try {
-        availabiliy.once("value").then(snap => {   
+        availability.once("value").then(snap => {   
             status.status   = responseCode.ok
             status.data     = []
             _.each(snap.val(), function(data) {
