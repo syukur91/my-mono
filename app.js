@@ -24,9 +24,7 @@ firebase.initializeApp(firebaseConfig);
 
 const tracking = firebase.database().ref('/tracking');
 const order = firebase.database().ref('/order');
-const vechicle = firebase.database().ref('/vechicle');
 const availability = firebase.database().ref('/availability');
-
 
 var orderSchema = {
     "orderName"     : "",
@@ -36,11 +34,6 @@ var orderSchema = {
 var trackingSchema = {
     "latitude"  : "",
     "longitude" : ""
-};
-
-var vehicleSchema = {
-    "vehicleID"      : "",
-    "vehicleNumber"  : ""
 };
 
 var availabilitySchema = {
@@ -55,16 +48,15 @@ let status = {}
 
 const responseCode = {}
 responseCode.internalServerError = 500
-responseCode.notFound = 400
+responseCode.notFound = 404
 responseCode.ok = 200
 
 app.get('/healthcheck', function (req, res) {
  return res.send(200);
 });
 
-
-
-// Add or Update tracking data
+// Name: Add or Update tracking data
+// Desc: Menambahkan atau mengupdate data lokasi terkini dari device yang disimpan di database 
 app.put('/tracking/:id', function (req, res) {
     try {
         let id = req.params.id; 
@@ -80,6 +72,7 @@ app.put('/tracking/:id', function (req, res) {
             status.data     = req.body
             status.status   = responseCode.ok
             return res.status(responseCode.ok).json(status);
+            
         } else {
             throw new Error(compare);
         } 
@@ -90,7 +83,8 @@ app.put('/tracking/:id', function (req, res) {
     }
 });
 
-// Add order data
+// Name: Add order data
+// Desc: Menambahkan data order ketika user membuat order dan mengurangi count dari availability sebanyak 1, setiap order dibuat
 app.post('/order', function (req, res) {
     try {
         var compare = compareJSON(orderSchema, req.body)
@@ -99,51 +93,50 @@ app.post('/order', function (req, res) {
             let data = {}
             let availabilityID = req.body.availabilityID
 
-            data.orderID    = id
-            data.orderName  = req.body.orderName
+            data.orderID         = id
+            data.orderName       = req.body.orderName
+            data.availabilityID  = req.body.availabilityID
 
             async.waterfall([
                 function(callback) {
                     
                     availability.child(availabilityID).once("value").then(snap => {
+                        data.count = snap.val().count
                         callback(null,snap.val())
                     }).catch(error => {
                         callback(error,null)
-                    }) 
-
+                    })  
+ 
                 },
                 function(arg1, callback){
-
-                    req.body.availabilityID = arg1.availabilityID
-                    data.availabilityID = arg1.availabilityID
-                    data.count = arg1.count
-
-                    order.child(id).set(req.body).then(() => {
+                    order.child(id).set(data).then(() => {
                         callback(null,data)
                     }).catch(error => {
                         callback(error,null) 
                     })
+                },
+                function (arg1,callback){ 
+
+                    availabilityData = {}
+                    availabilityData.count = (data.count-1)
+                        
+                    availability.child(data.availabilityID ).update(availabilityData).then(() => {
+                        callback(null,data)
+                    }).catch(error => {
+                        callback(error,null)
+                    })
 
                 }
             ], function(err, results) {
-               
+
                 if (err) {
                     status.status   = responseCode.internalServerError
                     return res.status(responseCode.internalServerError).send(status);
                 }
 
-                availabilityData = {}
-                availabilityData.count = (results.count-1)
-                results.count = availabilityData.count
-
-                availability.child(availabilityID).update(availabilityData).then(() => {
-                    status.data     = results
-                    status.status   = responseCode.ok
-                    return res.status(responseCode.ok).send(status);
-                }).catch(error => {
-                    status.status   = responseCode.internalServerError
-                    return res.status(responseCode.internalServerError).send(status);
-                })
+                status.data     = results
+                status.status   = responseCode.ok
+                return res.status(responseCode.ok).send(status);
                
             });
 
@@ -157,10 +150,8 @@ app.post('/order', function (req, res) {
     }
 });
 
-
-
-
-// Add availability data
+// Name: Add availability data
+// Desc: Menambahkan data availability, berupa tipe dan jumlah availability nya
 app.post('/availability', function (req, res) {
     try {
         var compare = compareJSON(availabilitySchema, req.body)
@@ -186,7 +177,8 @@ app.post('/availability', function (req, res) {
     }
 });
 
-// Update single availability data
+// Name: Update single availability data
+// Desc: Update count dari setiap tipe availability
 app.put('/availability/:id', function (req, res) {
     try {
         let id = req.params.id; 
@@ -208,14 +200,15 @@ app.put('/availability/:id', function (req, res) {
     }
 });
 
-// Reset availability data
+// Name: Reset availability data
+// Desc: Reset setiap jumlah count dari setiap tipe availability ke jumlah yang diinginkan
 app.put('/availability/default/:count', function (req, res) {
     try {
         let count = req.params.count;
         availability.once("value").then(snap => {
             _.each(snap.val(), function(data) {
                 data.count = count
-                availability.child(data.ID).update(data)
+                availability.child(data.availabilityID).update(data)
             });
             status.status   = responseCode.ok
             return res.status(responseCode.ok).send(status);
@@ -229,7 +222,8 @@ app.put('/availability/default/:count', function (req, res) {
     }
 });
 
-// Get availability list
+// Name: Get availability list
+// Desc: Mendapatkan list data dari tabel availability
 app.get('/availability', function (req, res) {
     try {
         availability.once("value").then(snap => {   
@@ -248,8 +242,6 @@ app.get('/availability', function (req, res) {
         return res.status(responseCode.internalServerError).json(status);
     }
 });
-
-
 
 app.listen(process.env.PORT || 8080);
 console.log('Tracking API run on port ' + process.env.PORT);
