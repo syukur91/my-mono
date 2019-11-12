@@ -150,6 +150,28 @@ app.post('/order', function (req, res) {
     }
 });
 
+// Name: Get order list
+// Desc: Mendapatkan list data dari tabel order
+app.get('/order', function (req, res) {
+    try {
+        order.once("value").then(snap => {   
+            status.status   = responseCode.ok
+            status.data     = []
+            _.each(snap.val(), function(data) {
+                status.data.push(data)
+            });
+            return res.status(responseCode.ok).send(status);
+        }).catch(error => {
+            throw new Error(error);
+        }) 
+    } catch (e) {
+        status.message  = e.message
+        status.status  = responseCode.internalServerError
+        return res.status(responseCode.internalServerError).json(status);
+    }
+});
+
+
 // Name: Add availability data
 // Desc: Menambahkan data availability, berupa tipe dan jumlah availability nya
 app.post('/availability', function (req, res) {
