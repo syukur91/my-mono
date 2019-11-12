@@ -101,7 +101,7 @@ app.post('/order', function (req, res) {
                 function(callback) {
                     
                     availability.child(availabilityID).once("value").then(snap => {
-                        data.count = snap.val().count
+                        data.count = parseInt(snap.val().count)
                         callback(null,snap.val())
                     }).catch(error => {
                         callback(error,null)
