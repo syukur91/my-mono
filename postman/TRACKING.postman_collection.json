@@ -1,0 +1,221 @@
+{
+	"info": {
+		"_postman_id": "0d61f30c-8cc2-4d48-a9b0-e40b5c1ae025",
+		"name": "TRACKING",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Update device location",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"latitude\"  : \"444444\",\n    \"longitude\" : \"666666\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{remote_url}}/tracking/E0KmQIqW",
+					"host": [
+						"{{remote_url}}"
+					],
+					"path": [
+						"tracking",
+						"E0KmQIqW"
+					]
+				},
+				"description": "Endpoint ini digunakan untuk mengupdate lokasi device ketika melakukan trip untuk pengiriman barang."
+			},
+			"response": []
+		},
+		{
+			"name": "Create new order",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"orderName\": \"Order soju\",\n\t\"availabilityID\": \"E0KmQIqW\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{remote_url}}/order",
+					"host": [
+						"{{remote_url}}"
+					],
+					"path": [
+						"order"
+					]
+				},
+				"description": "Endpoint ini digunakan untuk membuat order pengiriman barang dan selanjutnya akan mengupdate availability kendaraan di tabel availability."
+			},
+			"response": []
+		},
+		{
+			"name": "Create new availability",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"type\": \"jumbo\",\n\t\"count\": 13\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{remote_url}}/availability",
+					"host": [
+						"{{remote_url}}"
+					],
+					"path": [
+						"availability"
+					]
+				},
+				"description": "Endpoint ini digunakan untuk membuat data availability kendaraan baru di tabel availability."
+			},
+			"response": []
+		},
+		{
+			"name": "Update single availability data",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"type\": \"reguler\",\n\t\"count\": 4\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{remote_url}}/availability/P1bm3gVp",
+					"host": [
+						"{{remote_url}}"
+					],
+					"path": [
+						"availability",
+						"P1bm3gVp"
+					]
+				},
+				"description": "Endpoint ini digunakan untuk mengupdate satu data availability, update dilakukan berdasarkan id data yang akan diupdate."
+			},
+			"response": []
+		},
+		{
+			"name": "Reset all availability data count",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "{{remote_url}}/availability/default/20",
+					"host": [
+						"{{remote_url}}"
+					],
+					"path": [
+						"availability",
+						"default",
+						"20"
+					]
+				},
+				"description": "Endpoint ini digunakan untuk mereset semua jumlah data ketersediaan ke jumlah yang diinginkan."
+			},
+			"response": []
+		},
+		{
+			"name": "Healthcheck",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{remote_url}}/healthcheck",
+					"host": [
+						"{{remote_url}}"
+					],
+					"path": [
+						"healthcheck"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get availability list",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{remote_url}}/availability",
+					"host": [
+						"{{remote_url}}"
+					],
+					"path": [
+						"availability"
+					]
+				},
+				"description": "Endpoint ini digunakan untuk mendapatkan seluruh data availability yang ada di dalam tabel availability."
+			},
+			"response": []
+		},
+		{
+			"name": "Get order list",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{remote_url}}/order",
+					"host": [
+						"{{remote_url}}"
+					],
+					"path": [
+						"order"
+					]
+				},
+				"description": "Endpoint ini digunakan untuk mendapatkan seluruh data order yang ada di tabel order."
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
