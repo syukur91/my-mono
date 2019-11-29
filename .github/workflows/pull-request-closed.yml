@@ -15,4 +15,14 @@ jobs:
         run: echo "$GITHUB_CONTEXT"
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
+
+      - name: Check the latest commit ID
+        run: echo "$GITHUB_CONTEXT"
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github.event.pull_request.head.sha) }}
+
+      - name: Check the merge commit ID
+        run: echo "$GITHUB_CONTEXT"
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github.event.pull_request.merge_commit_sha) }}
           
