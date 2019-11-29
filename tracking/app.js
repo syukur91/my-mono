@@ -24,7 +24,9 @@ firebase.initializeApp(firebaseConfig);
 
 const tracking = firebase.database().ref('/tracking');
 const order = firebase.database().ref('/order');
+const vechicle = firebase.database().ref('/vechicle');
 const availability = firebase.database().ref('/availability');
+
 
 var orderSchema = {
     "orderName"     : "",
@@ -93,50 +95,51 @@ app.post('/order', function (req, res) {
             let data = {}
             let availabilityID = req.body.availabilityID
 
-            data.orderID         = id
-            data.orderName       = req.body.orderName
-            data.availabilityID  = req.body.availabilityID
+            data.orderID    = id
+            data.orderName  = req.body.orderName
 
             async.waterfall([
                 function(callback) {
                     
                     availability.child(availabilityID).once("value").then(snap => {
-                        data.count = parseInt(snap.val().count)
                         callback(null,snap.val())
                     }).catch(error => {
                         callback(error,null)
-                    })  
- 
+                    }) 
+
                 },
                 function(arg1, callback){
-                    order.child(id).set(data).then(() => {
+
+                    req.body.availabilityID = arg1.availabilityID
+                    data.availabilityID = arg1.availabilityID
+                    data.count = arg1.count
+
+                    order.child(id).set(req.body).then(() => {
                         callback(null,data)
                     }).catch(error => {
                         callback(error,null) 
                     })
-                },
-                function (arg1,callback){ 
-
-                    availabilityData = {}
-                    availabilityData.count = (data.count-1)
-                        
-                    availability.child(data.availabilityID ).update(availabilityData).then(() => {
-                        callback(null,data)
-                    }).catch(error => {
-                        callback(error,null)
-                    })
 
                 }
             ], function(err, results) {
-
+               
                 if (err) {
                     status.status   = responseCode.internalServerError
                     return res.status(responseCode.internalServerError).send(status);
                 }
 
-                status.data     = results
-                status.status   = responseCode.ok
-                return res.status(responseCode.ok).send(status);
+                availabilityData = {}
+                availabilityData.count = (results.count-1)
+                results.count = availabilityData.count
+
+                availability.child(availabilityID).update(availabilityData).then(() => {
+                    status.data     = results
+                    status.status   = responseCode.ok
+                    return res.status(responseCode.ok).send(status);
+                }).catch(error => {
+                    status.status   = responseCode.internalServerError
+                    return res.status(responseCode.internalServerError).send(status);
+                })
                
             });
 
@@ -230,7 +233,7 @@ app.put('/availability/default/:count', function (req, res) {
         availability.once("value").then(snap => {
             _.each(snap.val(), function(data) {
                 data.count = count
-                availability.child(data.availabilityID).update(data)
+                availability.child(data.ID).update(data)
             });
             status.status   = responseCode.ok
             return res.status(responseCode.ok).send(status);
