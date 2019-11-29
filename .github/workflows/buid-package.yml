@@ -27,13 +27,13 @@ jobs:
           MASTER_TAG: ${{ toJson(github.event.pull_request.merge_commit_sha) }}
 
       - name: dockerize the branch tag
-        run: export BRANCH_TAG=`printf '%b\n' "$BRANCH_COMMMIT_ID" | cut -c1-7` && docker build -t docker.pkg.github.com/syukur91/my-mono/hello-world:$BRANCH_TAG  .
+        run: export BRANCH_TAG=`sed -e 's/^"//' -e 's/"$//' <<<"$BRANCH_COMMMIT_ID"` && docker build -t docker.pkg.github.com/syukur91/my-mono/hello-world:$BRANCH_TAG  .
         working-directory: src
         env:
           BRANCH_COMMMIT_ID: ${{ toJson(github.event.pull_request.head.sha) }}
 
       - name: retag
-        run: export MASTER_TAG=`printf '%b\n' "$MASTER_COMMIT_ID" | cut -c1-7` && docker tag docker.pkg.github.com/syukur91/my-mono/hello-world:$BRANCH_TAG docker.pkg.github.com/syukur91/my-mono/hello-world:$MASTER_TAG 
+        run: export MASTER_TAG=`sed -e 's/^"//' -e 's/"$//' <<<"$MASTER_COMMIT_ID" ` && docker tag docker.pkg.github.com/syukur91/my-mono/hello-world:$BRANCH_TAG docker.pkg.github.com/syukur91/my-mono/hello-world:$MASTER_TAG 
         working-directory: src
         env:
           MASTER_COMMIT_ID: ${{ toJson(github.event.pull_request.merge_commit_sha) }}
