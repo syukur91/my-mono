@@ -25,6 +25,7 @@ jobs:
           BRANCH_TAG: ${{ toJson(github.event.pull_request.head.sha) }}
 
       - name: Check the merge commit ID
+        if: github.event.pull_request.merged == true 
         run: echo "$GITHUB_CONTEXT"
         env:
           MASTER_TAG: ${{ toJson(github.event.pull_request.merge_commit_sha) }}
@@ -43,11 +44,5 @@ jobs:
         env:
           MASTER_COMMIT_ID: ${{ toJson(github.event.pull_request.merge_commit_sha) }}
           BRANCH_COMMMIT_ID: ${{ toJson(github.event.pull_request.head.sha) }}
-      
-      # - name: push the docker
-      #   run: docker push docker.pkg.github.com/syukur91/my-mono/hello-world:$BRANCH_TAG  .
-      #   working-directory: src
-      #   env:
-      #     BRANCH_COMMMIT_ID: ${{ toJson(github.event.pull_request.head.sha) }}
 
           
