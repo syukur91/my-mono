@@ -1,3 +1,2 @@
 FROM scratch AS builder
-COPY hello /
-CMD ["/hello"]
+CMD ["echo hello"]
