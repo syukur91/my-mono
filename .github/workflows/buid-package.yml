@@ -2,6 +2,8 @@ name: build-package
 on:
   pull_request:
     types: [closed]
+    paths:
+          - "src/**"
 
 jobs:
   miyazaki-infra-staging-deployment:
