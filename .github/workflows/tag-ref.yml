@@ -2,7 +2,7 @@ name: tag-ref
 on: 
  push:
     tags:
-      - mono-code-prod-*
+      - test-code-prod-*
 
 jobs:
   miyazaki-infra-staging-deployment:

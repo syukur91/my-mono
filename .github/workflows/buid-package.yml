@@ -1,9 +1,8 @@
 name: build-package
 on:
-  pull_request:
-    types: [closed]
-    paths:
-          - "src/**"
+  push:
+    tags:
+      - mono-code-prod-*
 
 jobs:
   miyazaki-infra-staging-deployment:
