@@ -1,0 +1,13 @@
+name: push
+on: [push]
+  
+jobs:
+  build-image-job:
+    runs-on: ubuntu-latest
+    steps:
+    
+      - name: Checkout public repo
+        uses: actions/checkout@master
+
+    
+          
